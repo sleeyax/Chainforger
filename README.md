@@ -6,8 +6,7 @@ A proxy scraper, created to use for proxychains
 - [x] Currently more than 1000 proxies scrapable!
 - [x] Apply filter for http or socks (https filter coming soon!)
 - [x] Fast & open source
-<br />
-<img src='https://i.imgur.com/Obv8Eci.png' />
+<img src='https://i.imgur.com/Obv8Eci.png' /><br />
 # Requirements
 - Python 3.4 or above
 - The requests module
