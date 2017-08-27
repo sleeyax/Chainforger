@@ -1,10 +1,12 @@
 # Chainforger
 A proxy scraper, created to use for proxychains
-<img src='https://i.imgur.com/aIGnEKh.png'/>
+<img src='https://i.imgur.com/jkedgCy.png'/>
 # Features
-- [x] Scrape http, socks4 and socks5
-- [x] Apply filter for http or socks
+- [x] Scrape http, https, socks4 and socks5
+- [x] Currently more than 1000 proxies scrapable!
+- [x] Apply filter for http or socks (https filter coming soon!)
 - [x] Fast & open source
+<img src='https://i.imgur.com/Obv8Eci.png'/>
 # Requirements
 - Python 3.4 or above
 - The requests module
@@ -19,3 +21,11 @@ run chainforger
 ```
 python chainforger.py
 ```
+# Changelog
+- Version 1.0
+    - First release
+- Version 1.1
+    - HTTPS support
+    - Fancy colors
+    - More scraping websites
+    - Add '#' before error lines
