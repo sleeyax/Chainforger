@@ -2,14 +2,14 @@ import requests
 import re
 import argparse
 import json
+import time
 
 class Forger():
-	"""def __init__(self, arg):
-		super(Forge, self).__init__()
-		self.arg = arg"""
+	def __init__(self,):
+		self.pcount = 0
 
 	def banner(self):
-		print ("""
+		print ("""\033[1;33m
 
       _           _        __                          
      | |         (_)      / _|                         
@@ -21,14 +21,17 @@ class Forger():
                                        |___/           
 
 ---------------------------------------------------
-V 1.0
----------------------------------------------------
+V 1.1
+---------------------------------------------------\033[0m
+\033[1;37m
 use >> file.txt to redirect output to a file. 
 Example: python chainforger.py >> output.txt
 
-type --help for more options
----------------------------------------------------
-Format: type  host  port [user pass]
+type --help for more options\033[0m
+\033[1;33m
+---------------------------------------------------\033[0m
+\033[1;37m
+Format: type  host  port [user pass]\033[0m
 """)
 
 	def start(self, filter = None):
@@ -37,18 +40,21 @@ Format: type  host  port [user pass]
 				getattr(self, filter)()
 				pass
 			except Exception as e:
-				print("Error: " + str(e))
+				print("# Error: " + str(e))
 				pass
 		else:
 			self.socks()
 			self.http()
-				
+			self.all()
+		print("# Amount of proxies: " + str(self.pcount))
+
 	def socks(self):
 		r = requests.get("https://www.socks-proxy.net/", verify=False)
 		html = r.text
 		matches = re.findall(r"(\d+?\.\d+?\.\d+?\.\d+).*?(\d{1,5}).*?(Socks\d)", html)
 		for match in matches:
 			print(match[2].lower() + "	" + match[0] + "	" + match[1])
+			self.pcount += 1
 
 		headers = {
 		"Referer" : "https://hidester.com/proxylist/",
@@ -61,8 +67,9 @@ Format: type  host  port [user pass]
 				json = r.json()
 				for json_array in json:
 					print(json_array["type"].lower() + "	" + json_array["IP"] + "	" + str(json_array["PORT"]))
+					self.pcount += 1
 			except Exception as e:
-				print("Error: " + str(e))
+				print("# Error: " + str(e))
 				pass
 	
 	def http(self):
@@ -71,6 +78,7 @@ Format: type  host  port [user pass]
 		matches = re.findall(r"(\d+?\.\d+?\.\d+?\.\d+).*?(\d{1,5}).*?(no)", html)
 		for match in matches:
 			print("http" + "	" + match[0] + "	" + match[1])
+			self.pcount += 1
 
 		headers = {
 		"Referer" : "https://hidester.com/proxylist/",
@@ -84,9 +92,34 @@ Format: type  host  port [user pass]
 				json = r.json()
 				for json_array in json:
 					print(json_array["type"].lower() + "	" + json_array["IP"] + "	" + str(json_array["PORT"]))
+					self.pcount += 1
 			except Exception as e:
-				print("Error: " + str(e))
+				print("# Error: " + str(e))
 				pass
+
+	def all(self):
+		try:
+			for i in range(0, 500, 20): # 7220 max
+				r = requests.get("http://proxydb.net/?protocol=http&protocol=https&protocol=socks4&protocol=socks5&offset=" + str(i))
+
+				html = r.text
+				matches = re.findall(r"var x = '(\d{1,4}\.\d{1,4}\.\d{1,4})'.*?var y = '(.+?)'.*?var p = (-*\d+).*?(-*\d+).*?#(.+?)\"", html, re.DOTALL)
+				for match in matches:
+					x = match[0][::-1]
+					y = match[1]
+					z = int(match[2])
+					p = z + int(match[3])
+
+					ip = x + y
+					port = p
+					protocol = match[4]
+					print(protocol + "	" + ip + "	" + str(port))
+					self.pcount += 1
+				time.sleep(10)
+
+		except Exception as e:
+			print("# Error: " + str(e))
+			pass
 
 parser = argparse.ArgumentParser(description="Chainforger v1.0")
 parser.add_argument("--f", nargs='?', metavar="<protocol>", help="Filter for socks or http only")
