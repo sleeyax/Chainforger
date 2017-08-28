@@ -28,7 +28,7 @@ run chainforger
 python chainforger.py --help
 ```
 
-#Screenshots
+# Screenshots
 <img src='https://i.imgur.com/Obv8Eci.png' /><br />
 <img src='https://i.imgur.com/3KYeG4n.png' /><br />
 
