@@ -69,6 +69,6 @@ Chainforger will now check your proxies...
 			pass
 		
 	def fwrite(self, line):
-		file = open("exported_proxies.txt", "w") # TODO: add date or custom name
-		file.write(line)
+		file = open("exported_proxies.txt", "a") # TODO: add date or custom name
+		file.write(line + "\n")
 		file.close()
