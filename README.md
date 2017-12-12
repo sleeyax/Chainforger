@@ -12,8 +12,6 @@ A proxy scraper for proxychains
 # Requirements
 - Python 3.4 or above
 - The requests module
-# Agreement
-This software may not be used for illegal purposes in any way possible.
 # Installation
 install requests module
 ```
