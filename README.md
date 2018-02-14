@@ -7,7 +7,6 @@ A proxy scraper for proxychains
 - [x] Built-in proxy checker (alpha)
 - [x] Currently 1000+ proxies scrapable!
 - [x] Apply filter for http, https or socks
-- [x] Fast & open source
 
 # Requirements
 - Python 3.4 or above
