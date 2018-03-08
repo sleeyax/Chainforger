@@ -57,3 +57,4 @@ python chainforger.py --help
 - Add more scrapable resources
 - Validate user input (check if file exists)
 - python chainforger.py --check out.txt --filter https -> = only check proxies with protocol 'https'
+- install dependencies using file (pip install -r <file>)
