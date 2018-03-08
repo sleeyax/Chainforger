@@ -1,22 +1,21 @@
 # Chainforger
 A proxy scraper for proxychains
-<img src='https://i.imgur.com/jkedgCy.png'/>
 
 # Features
 - [x] Scrape http, https, socks4 and socks5
-- [x] Built-in proxy checker (alpha)
+- [x] Check proxies on-the-fly or from a file
 - [x] Currently 1000+ proxies scrapable!
-- [x] Apply filter for http, https or socks
 
 # Requirements
-- Python 3.4 or above
-- The requests module
+- Python 3.4+
+- Requests module
+
 # Installation
 install requests module
 ```
 pip install requests
 ```
-install built-in proxy checker requirements
+(optional) when scraping socks, install requests socks extension:
 ```
 pip install requests[socks]
 ```
@@ -26,8 +25,11 @@ python chainforger.py --help
 ```
 
 # Screenshots
-<img src='https://i.imgur.com/Obv8Eci.png' /><br />
-<img src='https://i.imgur.com/3KYeG4n.png' /><br />
+<img src='https://i.imgur.com/6qsANQi.png'/><br>
+
+<img src='https://i.imgur.com/NhStkA4.png' /><br />
+
+<img src='https://i.imgur.com/yfiZJu3.png' /><br />
 
 # Changelog
 - Version 1.0
@@ -41,3 +43,17 @@ python chainforger.py --help
     - Filter HTTPS
     - Built-in proxychecker (consider this in alpha)
     - Better project structure & general clean up
+- Version 2.0
+    - Code cleanup
+    - Export proxies the right way
+    - Custom export filename & proxy timeout
+    - Check proxy immediately after scraping
+    - Better GUI
+
+# TODO
+- Refactor last bits
+- Turn off on-the-fly proxy checking with option
+- Export proxies (automatically) to proxychains config
+- Add more scrapable resources
+- Validate user input (check if file exists)
+- python chainforger.py --check out.txt --filter https -> = only check proxies with protocol 'https'

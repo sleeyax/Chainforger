@@ -1,74 +1,81 @@
-import re, requests
-class Checker():
+import re, requests, sys
+from .gui import *
+class Checker:
+	def __init__(self, timeout = 10, exportFileName = None):
+		self.timeout = timeout
+		self.exportFileName = exportFileName
 
-	def banner(self):
-		print ("""\033[1;33m
+	def showStatus(self):
+		if self.timeout != None:
+			showInfo("Proxy timeout: " + str(self.timeout) + "s")
 
-      _           _        __
-     | |         (_)      / _|
-  ___| |__   __ _ _ _ __ | |_ ___  _ __ __ _  ___ _ __
- / __| '_ \ / _` | | '_ \|  _/ _ \| '__/ _` |/ _ \ '__|
-| (__| | | | (_| | | | | | || (_) | | | (_| |  __/ |
- \___|_| |_|\__,_|_|_| |_|_| \___/|_|  \__, |\___|_|
-                                        __/ |
-                                       |___/
+		if self.exportFileName != None:
+			showInfo("Exporting to: " + self.exportFileName)
+		else:
+			showWarning("No output file selected. Use '--export' or ignore this message")
+		
+		print()
 
----------------------------------------------------
-V 1.2	Proxychains proxy checker [alpha]
----------------------------------------------------\033[0m
-\033[1;37m
-Chainforger will now check your proxies...
-\033[0m
-""")
-	def __init__(self):
-		self.timeout = 10
+	def checkProxyList(self, fileToCheck):
+		showBanner()
+		showInfo("Checking your proxies...")
+		self.showStatus()
 
-	def check(self, file, timeout):
-		self.banner()
-
-		if timeout != None:
-			print("Dead proxy timeout: " + timeout + " seconds")
-			self.timeout = int(timeout)
-
-		file = open(file, "r")
+		file = open(fileToCheck, "r")
 		for line in file:
 			if re.match(r"http[s]*|socks\d", line):
-				self.format(line.rstrip())
+				data = self.parseArray(line.rstrip())
+				self.checkProxy(data["protocol"], data["ip"], data["port"])
 
-	def format(self, line):
+	def parseArray(self, line):
 		match = re.match(r"(.+?)	(\d{1,4}\.\d{1,4}\.\d{1,4}\.\d{1,4})	(\d+)", line)
-		if match:
-			self.check_response(match.group(1), match.group(2), match.group(3))
 
-	def check_response(self, protocol, ip, port):
-		try:
-			if protocol == "http":
-				proxy = {"http" : "http://" + ip}
-				r = requests.get("https://api.ipify.org/", proxies=proxy, timeout=self.timeout)
-
-			if protocol == "https":
-				proxy = {"https" : "http://" + ip}
-				r = requests.get("https://api.ipify.org/", proxies=proxy, timeout=self.timeout)
-
-			if protocol == "socks4":
-				proxy = {"https" : "socks4://" + ip, "http" : "socks4://" + ip}
-				r = requests.get("https://api.ipify.org/", proxies=proxy, timeout=self.timeout)
-
-			if protocol == "socks5":
-				proxy = {"https" : "socks5://" + ip, "http" : "socks5://" + ip}
-				r = requests.get("https://api.ipify.org/", proxies=proxy, timeout=self.timeout)
-
-			if r.status_code == 200:
-				print("[OK]: " + protocol, ip, port)
-				self.fwrite(protocol + "	" + ip + "	" + port)
-			else:
-				print("[ERROR]: " + protocol, ip, port + "[Dead proxy]")
-			pass
-		except Exception as e:
-			print("[ERROR]" + protocol, ip, port + "[Can't connect]")
-			pass
+		if match == False:
+			print("Error: Proxylist does not match proxychains format!")
+			sys.exit(1)
 		
-	def fwrite(self, line):
-		file = open("exported_proxies.txt", "a") # TODO: add date or custom name
-		file.write(line + "\n")
+		return {
+			"protocol": match.group(1),
+			"ip": match.group(2),
+			"port": match.group(3)
+        }
+
+	def checkProxy(self, protocol, ip, port):
+		
+		if protocol == "http":
+			proxy = {"http": "http://" + ip}
+
+		if protocol == "https":
+			proxy = {"https" : "http://" + ip}
+
+		if protocol == "socks4":
+			proxy = {"https" : "socks4://" + ip, "http" : "socks4://" + ip}
+
+		if protocol == "socks5":
+			proxy = {"https" : "socks5://" + ip, "http" : "socks5://" + ip}
+
+
+		try:
+			r = requests.get("https://api.ipify.org/", proxies=proxy, timeout=self.timeout)
+			
+			if r.status_code == 200:
+				print(getGreen("[OK]:"), protocol, ip, port)
+				
+				if self.exportFileName != None:
+					self.writeToFile(self.exportFileName, protocol + "	" + ip + "	" + port)
+				
+				return True
+			else:
+				print(getRed("[ERROR]:"), protocol, ip, port + "[Dead proxy]")
+				return False
+		except Exception as e:
+			print(getRed("[ERROR]:"), protocol, ip, port + "[Can't connect]")
+			return False
+		except KeyboardInterrupt:
+			showWarning("Stopping application...")
+			sys.exit(0)
+		
+	def writeToFile(self, filename, text):
+		file = open(filename, "a")
+		file.write(text + "\n")
 		file.close()

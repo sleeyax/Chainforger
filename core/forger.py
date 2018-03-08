@@ -1,62 +1,70 @@
 import requests, re, json, time
+from .checker import Checker
+from .gui import *
 requests.packages.urllib3.disable_warnings()
 
-class Forger():
-	def __init__(self,):
-		self.pcount = 0
+class Forger:
+	def __init__(self, timeout = 10, _filter = None, export = None):
+		self.proxyCount = 0
+		self.filter = _filter
+		self.fileName = export
+		self.timeout = timeout
 
-	def banner(self):
-		print ("""\033[1;33m
+	def start(self):
+		showBanner()
+		showInfo("ChainForger is forging proxies...")
+		self.showStatus()
+		try:
+			if self.filter != None:
+				try:
+					splitted = self.filter.split(',')
+					for split in splitted:
+						getattr(self, split)()
+				except Exception as e:
+					showError("Error: " + str(e) + " (Maybe you specified an invalid filter? See '--help' for more info)")
+			else:
+				self.http()
+				self.https()
+				self.socks()
+				self.all()
+		except KeyboardInterrupt:
+			showWarning("Stopping application...")
 
-      _           _        __
-     | |         (_)      / _|
-  ___| |__   __ _ _ _ __ | |_ ___  _ __ __ _  ___ _ __
- / __| '_ \ / _` | | '_ \|  _/ _ \| '__/ _` |/ _ \ '__|
-| (__| | | | (_| | | | | | || (_) | | | (_| |  __/ |
- \___|_| |_|\__,_|_|_| |_|_| \___/|_|  \__, |\___|_|
-                                        __/ |
-                                       |___/
+		showInfo("Total amount of proxies scraped: " + str(self.proxyCount))
 
----------------------------------------------------
-V 1.2
----------------------------------------------------\033[0m
-\033[1;37m
-use >> file.txt to redirect output to a file.
-Example: python chainforger.py >> output.txt
-
-type --help for more options\033[0m
-\033[1;33m
----------------------------------------------------\033[0m
-\033[1;37m
-Format: type  host  port [user pass]\033[0m
-""")
-
-	def start(self, filter):
-		self.banner()
-		if filter != None:
-			try:
-				splitted = filter.split(',')
-				for split in splitted:
-					getattr(self, split)()
-				pass
-			except Exception as e:
-				print("# Error: " + str(e))
-				pass
+	def showStatus(self):
+		if self.filter != None:
+			showInfo("Applied filter: " + self.filter)
+		if self.fileName != None:
+			showInfo("Exporting proxies to: " + self.fileName)
 		else:
-			self.http()
-			self.https()
-			self.socks()
-			self.all()
+			showWarning("No export file selected. Use '--export' or ignore this message")
+		if self.timeout != None:
+			showInfo("Proxy timeout: " + str(self.timeout) + "s")
+		else:
+			showWarning("No proxy timeout set. Defaulting to 10s, use '--timeout' or ignore this message")
+		
+		print()
 
-		print("# Amount of proxies: " + str(self.pcount))
+	def writeToFile(self, filename, text):
+		file = open(filename, "a")
+		file.write(text + "\n")
+		file.close()
+
+	def printProxy(self, protocol, ip, port):
+		checker = Checker(self.timeout)
+		if checker.checkProxy(protocol, ip, port) == True:
+			proxy = protocol + "	" + ip + "	" + port
+			if self.fileName != None:
+				self.writeToFile(self.fileName, proxy)
 
 	def socks(self):
 		r = requests.get("https://www.socks-proxy.net/", verify=False, allow_redirects=False)
 		html = r.text
 		matches = re.findall(r"(\d+?\.\d+?\.\d+?\.\d+).*?(\d{1,5}).*?(Socks\d)", html)
 		for match in matches:
-			print(match[2].lower() + "	" + match[0] + "	" + match[1])
-			self.pcount += 1
+			self.printProxy(match[2].lower(), match[0], match[1])
+			self.proxyCount += 1
 
 		headers = {
 		"Referer" : "https://hidester.com/proxylist/",
@@ -68,8 +76,8 @@ Format: type  host  port [user pass]\033[0m
 				r = requests.get("https://hidester.com/proxydata/php/data.php?mykey=data&offset=" + str(i) + "&limit=10&orderBy=latest_check&sortOrder=DESC&country=&port=&type=12&anonymity=7&ping=7&gproxy=2", headers=headers, verify=False)
 				json = r.json()
 				for json_array in json:
-					print(json_array["type"].lower() + "	" + json_array["IP"] + "	" + str(json_array["PORT"]))
-					self.pcount += 1
+					self.printProxy(json_array["type"].lower(), json_array["IP"], str(json_array["PORT"]))
+					self.proxyCount += 1
 			except Exception as e:
 				print("# Error: " + str(e))
 				pass
@@ -79,8 +87,8 @@ Format: type  host  port [user pass]\033[0m
 		html = r.text
 		matches = re.findall(r"(\d+?\.\d+?\.\d+?\.\d+).*?(\d{1,5}).*?(no)", html)
 		for match in matches:
-			print("http" + "	" + match[0] + "	" + match[1])
-			self.pcount += 1
+			self.printProxy("http", match[0], match[1])
+			self.proxyCount += 1
 
 		headers = {
 		"Referer" : "https://hidester.com/proxylist/",
@@ -93,8 +101,8 @@ Format: type  host  port [user pass]\033[0m
 				r = requests.get("https://hidester.com/proxydata/php/data.php?mykey=data&offset=" + str(i) + "&limit=10&orderBy=latest_check&sortOrder=DESC&country=&port=&type=1&anonymity=7&ping=7&gproxy=2", headers=headers, verify=False)
 				json = r.json()
 				for json_array in json:
-					print(json_array["type"].lower() + "	" + json_array["IP"] + "	" + str(json_array["PORT"]))
-					self.pcount += 1
+					self.printProxy(json_array["type"].lower(), json_array["IP"], str(json_array["PORT"]))
+					self.proxyCount += 1
 			except Exception as e:
 				print("# Error: " + str(e))
 				pass
@@ -115,8 +123,8 @@ Format: type  host  port [user pass]\033[0m
 					ip = x + y
 					port = p
 					protocol = match[4]
-					print(protocol + "	" + ip + "	" + str(port))
-					self.pcount += 1
+					self.printProxy(protocol, ip, str(port))
+					self.proxyCount += 1
 				time.sleep(3)
 
 			except Exception as e:
@@ -129,8 +137,8 @@ Format: type  host  port [user pass]\033[0m
 			html = r.text
 			matches = re.findall(r"(\d+?\.\d+?\.\d+?\.\d+).*?(\d{1,5}).*?(no)", html)
 			for match in matches:
-				print("https" + "	" + match[0] + "	" + match[1])
-				self.pcount += 1
+				self.printProxy("https", match[0], match[1])
+				self.proxyCount += 1
 			pass
 		except Exception as e:
 			print("# Error: " + str(e))

@@ -2,23 +2,22 @@ import argparse
 from core.forger import Forger
 from core.checker import Checker
 
-parser = argparse.ArgumentParser(description="Chainforger v1.2")
-parser.add_argument("-f", nargs='?', metavar="<socks,http,https>", help="Filter for socks, http or https (seperated by comma)")
-parser.add_argument("--check", nargs='?', metavar="<proxies.txt>", help="Check proxies (use -t to set timeout)")
-parser.add_argument("-t", nargs='?', metavar="<timeout>", help="Set timeout for proxychecker")
+example = """
+Examples:
+	python3 chainforger.py --filter http,socks --export exported.txt --timeout 5
+	python3 chainforger.py --check exported.txt --export exported_checked.txt
+"""
+parser = argparse.ArgumentParser(description="Chainforger v2.0", epilog=example, formatter_class=argparse.RawTextHelpFormatter)
+parser.add_argument("--filter", nargs='?', metavar="<socks,http,https>", help="Protocol filter (seperated by comma)")
+parser.add_argument("--check", nargs='?', metavar="<proxies.txt>", help="File to check proxies from")
+parser.add_argument("--export", nargs='?', metavar="<exported.txt>", help="Export proxies to file")
+parser.add_argument("--timeout", nargs='?', metavar="<timeout>", help="Proxy timeout", const=10, type=int)
 args = parser.parse_args()
 
-if args.f != None:
-	forger = Forger()
-	forger.start(args.f)
-	
-if args.check != None:
-	checker = Checker()
-	if args.t != None:
-		checker.check(args.check, args.t)
-	else:
-		checker.check(args.check, None)
+if args.check != None and args.filter == None:
+	checker = Checker(args.timeout, args.export)
+	checker.checkProxyList(args.check)
 
-if args.check == None and args.f == None:
-	forger = Forger()
-	forger.start(None)
+if args.check == None:
+	forger = Forger(args.timeout, args.filter, args.export)
+	forger.start()
