@@ -11,7 +11,7 @@ def showBanner():
                                        |___/
 
 ---------------------------------------------------
-V 2.0  ChainForger ~ proxy scraper for proxychains
+V 2.1  ChainForger ~ proxy scraper for proxychains
 ---------------------------------------------------
 """))
 

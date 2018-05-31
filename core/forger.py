@@ -9,6 +9,10 @@ class Forger:
 		self.filter = _filter
 		self.fileName = export
 		self.timeout = timeout
+		self.otf = True
+
+	def disableOtf(self):
+		self.otf = False
 
 	def start(self):
 		showBanner()
@@ -43,6 +47,10 @@ class Forger:
 			showInfo("Proxy timeout: " + str(self.timeout) + "s")
 		else:
 			showWarning("No proxy timeout set. Defaulting to 10s, use '--timeout' or ignore this message")
+		if self.otf:
+			showInfo("On-the-fly proxy checking is enabled")
+		else:
+			showInfo("On-the-fly proxy checking is disabled")
 		
 		print()
 
@@ -52,11 +60,19 @@ class Forger:
 		file.close()
 
 	def printProxy(self, protocol, ip, port):
+		proxy = protocol + "	" + ip + "	" + port
+		
 		checker = Checker(self.timeout)
-		if checker.checkProxy(protocol, ip, port) == True:
-			proxy = protocol + "	" + ip + "	" + port
-			if self.fileName != None:
-				self.writeToFile(self.fileName, proxy)
+
+		if self.otf == True:
+			if checker.checkProxy(protocol, ip, port) == False:
+				return
+		else:
+			print(proxy)
+		
+		if self.fileName != None:
+			self.writeToFile(self.fileName, proxy)
+			
 
 	def socks(self):
 		r = requests.get("https://www.socks-proxy.net/", verify=False, allow_redirects=False)

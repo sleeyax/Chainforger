@@ -4,6 +4,7 @@ class Checker:
 	def __init__(self, timeout = 10, exportFileName = None):
 		self.timeout = timeout
 		self.exportFileName = exportFileName
+		self.filter = []
 
 	def showStatus(self):
 		if self.timeout != None:
@@ -16,16 +17,24 @@ class Checker:
 		
 		print()
 
+	def setFilter(self, _filter):
+		self.filter = _filter.split(',')
+
 	def checkProxyList(self, fileToCheck):
 		showBanner()
 		showInfo("Checking your proxies...")
 		self.showStatus()
 
-		file = open(fileToCheck, "r")
-		for line in file:
-			if re.match(r"http[s]*|socks\d", line):
-				data = self.parseArray(line.rstrip())
-				self.checkProxy(data["protocol"], data["ip"], data["port"])
+		try:
+			file = open(fileToCheck, "r")
+			for line in file:
+				if re.match(r"http[s]*|socks\d", line):
+					data = self.parseArray(line.rstrip())
+					if data["protocol"] not in self.filter:
+						self.checkProxy(data["protocol"], data["ip"], data["port"])
+		except FileNotFoundError:
+			showError("File '" + fileToCheck + "' not found!")
+		
 
 	def parseArray(self, line):
 		match = re.match(r"(.+?)	(\d{1,4}\.\d{1,4}\.\d{1,4}\.\d{1,4})	(\d+)", line)
