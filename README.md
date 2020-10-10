@@ -1,6 +1,8 @@
 # Chainforger
 A proxy scraper for proxychains
 
+**NO LONGER MAINTAINED. ChainForger was a nice little side project. I haven't touched it in years and don't plan to anymore, which is why it's archived now.**
+
 # Features
 - [x] Scrape http, https, socks4 and socks5
 - [x] Built-in proxy checker
